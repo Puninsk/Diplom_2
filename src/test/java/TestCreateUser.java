@@ -4,25 +4,28 @@ import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.After;
-import project.User;
 import org.junit.Test;
+import project.UserRequests;
+import project.UserData;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 public class TestCreateUser {
-    private User user;
+    private UserData userData;
+    private UserRequests userRequests;
     private String accessToken;
 
     @Before
     public void generateDataUser() {
-        user = User.randomUser();
+        userData = UserData.randomUser();
+        userRequests = new UserRequests();
     }
     @Test
     @DisplayName("Create user")
     @Description("Create user with correct data")
     public void createUserWithCorrectData() {
-        Response response = user.createUser(user);
+        Response response = userRequests.createUser(userData);
         int actualStatusCode = response.getStatusCode();
         boolean isResponseSuccessful = response.jsonPath().getBoolean("success");
         String email = response.jsonPath().getString("user.email");
@@ -31,8 +34,8 @@ public class TestCreateUser {
         String refreshToken = response.body().jsonPath().getString("refreshToken");
         assertEquals(200, actualStatusCode);
         assertTrue(isResponseSuccessful);
-        assertEquals(user.getEmail().toLowerCase(), email);
-        assertEquals(user.getName(), name);
+        assertEquals(userData.getEmail().toLowerCase(), email);
+        assertEquals(userData.getName(), name);
         assertThat(accessToken, notNullValue());
         assertThat(refreshToken, notNullValue());
     }
@@ -40,8 +43,8 @@ public class TestCreateUser {
     @Test
     @DisplayName("Create user with exist data")
     public void createUserWithExistData() {
-        Response firstResponse = user.createUser(user);
-        Response secondResponse = user.createUser(user);
+        Response firstResponse = userRequests.createUser(userData);
+        Response secondResponse = userRequests.createUser(userData);
         accessToken = firstResponse.body().jsonPath().getString("accessToken");
         int actualStatusCode = secondResponse.getStatusCode();
         boolean isResponseSuccessful = secondResponse.jsonPath().getBoolean("success");
@@ -55,8 +58,8 @@ public class TestCreateUser {
     @Test
     @DisplayName("Create user without email")
     public void createUserWithoutEmail() {
-        User user = new User(null, RandomStringUtils.randomAlphanumeric(6), RandomStringUtils.randomAlphanumeric(6));
-        Response response = user.createUser(user);
+        UserData userData = new UserData(null, RandomStringUtils.randomAlphanumeric(6), RandomStringUtils.randomAlphanumeric(6));
+        Response response = userRequests.createUser(userData);
         int actualStatusCode = response.statusCode();
         boolean isResponseSuccessful = response.jsonPath().getBoolean("success");
         String responseMessage = response.jsonPath().getString("message");
@@ -69,8 +72,8 @@ public class TestCreateUser {
     @Test
     @DisplayName("Create user without password")
     public void createUserWithoutPassword() {
-        User user = new User(RandomStringUtils.randomAlphanumeric(5) + "@yandex.ru", null, RandomStringUtils.randomAlphanumeric(6));
-        Response response = user.createUser(user);
+        UserData userData = new UserData(RandomStringUtils.randomAlphanumeric(5) + "@yandex.ru", null, RandomStringUtils.randomAlphanumeric(6));
+        Response response = userRequests.createUser(userData);
         int actualStatusCode = response.statusCode();
         boolean isResponseSuccessful = response.jsonPath().getBoolean("success");
         String responseMessage = response.jsonPath().getString("message");
@@ -83,8 +86,8 @@ public class TestCreateUser {
     @Test
     @DisplayName("Create user without name")
     public void createUserWithoutName() {
-        User user = new User(RandomStringUtils.randomAlphanumeric(5) + "@yandex.ru", RandomStringUtils.randomAlphanumeric(6), null);
-        Response response = user.createUser(user);
+        UserData userData = new UserData(RandomStringUtils.randomAlphanumeric(5) + "@yandex.ru", RandomStringUtils.randomAlphanumeric(6), null);
+        Response response = userRequests.createUser(userData);
         int actualStatusCode = response.statusCode();
         boolean isResponseSuccessful = response.jsonPath().getBoolean("success");
         String responseMessage = response.jsonPath().getString("message");
@@ -96,8 +99,8 @@ public class TestCreateUser {
     @Test
     @DisplayName("Create user with empty email")
     public void createUserWithEmptyEmail() {
-        User user = new User("", RandomStringUtils.randomAlphanumeric(6), RandomStringUtils.randomAlphanumeric(6));
-        Response response = user.createUser(user);
+        UserData userData = new UserData("", RandomStringUtils.randomAlphanumeric(6), RandomStringUtils.randomAlphanumeric(6));
+        Response response = userRequests.createUser(userData);
         int actualStatusCode = response.statusCode();
         boolean isResponseSuccessful = response.jsonPath().getBoolean("success");
         String responseMessage = response.jsonPath().getString("message");
@@ -110,8 +113,8 @@ public class TestCreateUser {
     @Test
     @DisplayName("Create user with empty password")
     public void createUserWithEmptyPassword() {
-        User user = new User(RandomStringUtils.randomAlphanumeric(5) + "@yandex.ru", "", RandomStringUtils.randomAlphanumeric(6));
-        Response response = user.createUser(user);
+        UserData userData = new UserData(RandomStringUtils.randomAlphanumeric(5) + "@yandex.ru", "", RandomStringUtils.randomAlphanumeric(6));
+        Response response = userRequests.createUser(userData);
         int actualStatusCode = response.statusCode();
         boolean isResponseSuccessful = response.jsonPath().getBoolean("success");
         String responseMessage = response.jsonPath().getString("message");
@@ -123,8 +126,8 @@ public class TestCreateUser {
     @Test
     @DisplayName("Create user with empty name")
     public void createUserWithEmptyName() {
-        User user = new User(RandomStringUtils.randomAlphanumeric(5) + "@yandex.ru", RandomStringUtils.randomAlphanumeric(6), "");
-        Response response = user.createUser(user);
+        UserData userData = new UserData(RandomStringUtils.randomAlphanumeric(5) + "@yandex.ru", RandomStringUtils.randomAlphanumeric(6), "");
+        Response response = userRequests.createUser(userData);
         int actualStatusCode = response.statusCode();
         boolean isResponseSuccessful = response.jsonPath().getBoolean("success");
         String responseMessage = response.jsonPath().getString("message");
@@ -136,9 +139,9 @@ public class TestCreateUser {
 
     @After
     public void deleteUser() {
-        accessToken = user.loginUserReturnAccessToken(user);
+        accessToken = userRequests.loginUserReturnAccessToken(userData);
         if (!(accessToken == null)) {
-            user.deleteUser(accessToken);
+            userRequests.deleteUser(accessToken);
         }
     }
 
